@@ -1,0 +1,27 @@
+# Set sudo privileges required for running Docker.
+sudo: required
+
+# Specify required services, in this case, Docker.
+services:
+  - docker
+
+# Define environment variables.
+env:
+  global:
+    # Set SHA to the current Git commit hash.
+    - SHA=$(git rev-parse HEAD)
+    # Disable prompts for Google Cloud SDK.
+    - CLOUDSDK_CORE_DISABLE_PROMPTS=1
+
+# Actions to be performed before installing.
+before_install:
+  # Decrypt service account JSON file for Google Cloud.
+  - openssl aes-256-cbc -K $encrypted_9f3b5599b056_key -iv $encrypted_9f3b5599b056_iv -in service-account.json.enc -out service-account.json -d
+  # Install Google Cloud SDK silently.
+  - curl https://sdk.cloud.google.com | bash > /dev/null;
+  # Add Google Cloud SDK to PATH.
+  - source $HOME/google-cloud-sdk/path.bash.inc
+  # Update kubectl component.
+  - gcloud components update kubectl
+  # Activate service account using JSON key file.
+  - gcloud auth activate-service-account --key-file service-account.json
