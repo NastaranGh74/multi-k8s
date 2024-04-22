@@ -1,6 +1,8 @@
 # Set sudo privileges required for running Docker.
 sudo: required
 
+dist: focal
+
 # Specify required services, in this case, Docker.
 services:
   - docker
