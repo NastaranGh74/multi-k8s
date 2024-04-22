@@ -25,3 +25,27 @@ before_install:
   - gcloud components update kubectl
   # Activate service account using JSON key file.
   - gcloud auth activate-service-account --key-file service-account.json
+  # Set Google Cloud project.
+  - gcloud config set project multi-k8s-420703
+  # Set Google Cloud compute zone.
+  - gcloud config set compute/zone us-central1-a
+  # Get credentials for Kubernetes cluster.
+  - gcloud container clusters get-credentials multi-cluster
+  # Log in to Docker Hub.
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  # Build Docker image for testing.
+  - docker build -t nastaran74/react-test -f ./client/Dockerfile.dev ./client
+  # Specify the script to run for testing.
+script:
+  # Run tests within the Docker container.
+  - docker run -e CI=true nastaran74/react-test npm test
+
+# Deployment configuration.
+deploy:
+  # Specify the provider for deployment as a script because there is no deployer for kubernetes unlike docker
+  provider: script
+  # Specify the custom script to run for deployment.
+  script: bash ./deploy.sh
+  # Trigger deployment only when changes are pushed to the main branch.
+  on:
+    branch: main
